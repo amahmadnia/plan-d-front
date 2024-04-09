@@ -1,0 +1,15 @@
+@import "theme";
+
+.b_icon {
+  font-size: 16px !important;
+}
+
+.ant-btn-primary:disabled,
+.ant-btn-primary:disabled:hover,
+.ant-btn-primary:disabled:focus,
+.ant-btn-primary:disabled:active, {
+  opacity: .6;
+  border: none;
+  background-color: $primary-color;
+  color: white;
+}

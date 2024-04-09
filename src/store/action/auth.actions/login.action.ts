@@ -1,12 +1,12 @@
 import {Dispatch} from 'redux';
 import axios, {AxiosError} from 'axios';
 import {LOGIN_URL, SELF_URL} from "src/URLS";
-import {PermissionsType, UserType} from "src/types";
+import { UserType} from "src/types";
 import {setStatusAction} from "../global.actions";
 import {Modal} from "antd";
 
 export const LOGIN = '[auth reducer] Login Action';
-export type LoginType = { type: typeof LOGIN, payload: { token: string, user: UserType, permissions: PermissionsType } }
+export type LoginType = { type: typeof LOGIN, payload: { token: string, user: UserType } }
 
 export function loginAction({username, password, remember}: { username: string, password: string, remember: boolean }) {
     return async (dispatch: Dispatch) => {

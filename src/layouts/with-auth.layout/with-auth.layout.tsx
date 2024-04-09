@@ -1,133 +1,280 @@
 import React from "react";
 import {useHistory, Link} from 'react-router-dom';
-import {Button, Col, Form, Image, Layout, Menu, Row, Select, Typography, PageHeader} from 'antd'
+import {History} from 'history';
+import {Col, Form, Image, Layout, Menu, Row, Select, Breadcrumb, Spin} from 'antd';
+
 import * as AntIcon from '@ant-design/icons';
-import styles from './with-auth.module.css'
 import {convertPathToArray} from "src/lib";
 import {RootStateType} from "src/types";
 import {connect, ConnectedProps} from "react-redux";
 import headerLogo from 'src/assets/images/logo/logo_7.png';
 import sidebarLogo from 'src/assets/images/logo/why-logo.png';
-import {logoutAction, projectCRUDAction, projectSelectAction} from "src/store/action";
-import classNames from "classnames";
-
-const pageName = {
-    'baseline': 'خط مبنا',
-    'project-team': 'نفرات کارفرما',
-}
+import {logoutAction, selectCompanyAction, companySelectAction} from "src/store/action";
+import first_sidebar_item, {Parent} from './first-sidebar.layout';
+import second_sidebar_item, {Item} from './second-sidebar.layout';
 
 const mapStateToProps = (state: RootStateType) => ({
-    grade: state.authReducer.user?.grade!,
     user: state.authReducer.user!,
-    project: state.authReducer.project,
-    projects: state.tablesReducer.project.LIST?.data?.map(project => ({label: project.title, value: project.id})),
+    companies: state.tablesReducer.select_companies,
+    selected_company: state.authReducer.company,
+    permissions: state.authReducer.permissions,
 });
 
 const connector = connect(mapStateToProps, {
     logout: logoutAction,
-    projectAction: projectCRUDAction,
-    selectProject: projectSelectAction
+    select_companies: selectCompanyAction,
+    select_company: companySelectAction
 });
 
-type PropType = { children: React.ReactElement | React.ReactElement[] } & ConnectedProps<typeof connector>
+type PropType =
+    {
+        history: History
+    }
+    & ConnectedProps<typeof connector>;
 
-const sidebarWidth = 200;
+
+type StateType = {
+    collapse1: boolean,
+    collapse2: boolean,
+    path: string[],
+    sidebar1?: Parent[],
+    sidebar2?: Item[]
+};
+
+
+const sidebarWidth = 210;
 const sidebarCollapseWidth = 80;
 
-function WithAuth({children, grade, logout, user, project, projects, projectAction, selectProject}: PropType) {
-    const history = useHistory();
+class WithAuth extends React.Component<PropType, StateType> {
+    state: StateType = {collapse1: false, collapse2: false, path: [], sidebar1: undefined, sidebar2: undefined}
+    unregister_history_listen?: CallableFunction;
+    sidebar1?: Parent[];
+    item_in_sidebar1: string[] = [];
+    sidebar2?: Item[];
 
-    const [path, setPath] = React.useState(convertPathToArray(history.location.pathname));
+    componentDidMount() {
+        const {companies, select_companies, history, permissions} = this.props;
+        const path = convertPathToArray(history.location.pathname);
 
-    const [collapse, setCollapse] = React.useState(false);
+        if (companies.LIST?.status === undefined)
+            select_companies();
 
-    React.useEffect(() => {
-        if (!projects)
-            projectAction({type: 'list'})
-        return history.listen((location) => {
-            setPath(convertPathToArray(location.pathname))
+        this.unregister_history_listen = history.listen((location) => {
+            this.setState({path: convertPathToArray(location.pathname)});
         });
-    });
 
-    return (
-        <Layout>
+        if (permissions) {
+            this.add_to_first_sidebar(second_sidebar_item)
+            this.setState({sidebar1: this.sidebar1});
+            this.change_first_sidebar({key: path[0]});
 
-            <Layout.Sider collapsible
-                          collapsed={collapse}
-                          onCollapse={setCollapse}
-                          className={styles.sidebar}
-                          collapsedWidth={sidebarCollapseWidth}
-                          width={sidebarWidth}
-            >
-                <div className={styles.sidebarLogo}>
-                    <Image src={sidebarLogo} className={styles.logoSidebarImage} preview={false}/>
-                </div>
-                <Form.Item className={styles.select_project} wrapperCol={{span: 24}}
-                           label={'پروژه'} colon={false}>
-                    <Select options={projects} loading={!projects} value={projects ? project : undefined}
-                            placeholder={'پروژه'}
-                            onChange={(value) => selectProject(value)}/>
-                </Form.Item>
+        } else if (history.location.pathname !== "")
+            history.replace("/");
+        this.setState({path});
+    }
 
-                <Menu mode="vertical" selectable={false} selectedKeys={path}
-                      className={styles.siderMenu} title="منوی اصلی"
-                      theme={'dark'}
+    componentDidUpdate(prevProps: Readonly<PropType>, prevState: Readonly<StateType>, snapshot?: any) {
+        const {select_company, selected_company, companies} = this.props;
+        if (selected_company === undefined && companies.LIST?.status === 'ok' && companies.LIST.data!.length === 1)
+            select_company(companies.LIST.data![0].id)
+    }
 
+    componentWillUnmount() {
+        if (this.unregister_history_listen)
+            this.unregister_history_listen()
+    }
+
+    add_to_first_sidebar(items: Item[], first: boolean = false) {
+        const {permissions} = this.props;
+        items.find(item => {
+            if (item.key in permissions!) {
+                if (!this.item_in_sidebar1.includes(item.parent)) {
+                    const parent = first_sidebar_item.find(parent => parent.key === item.parent)
+                    if (this.sidebar1 && parent)
+                        this.sidebar1.push(parent)
+                    else if (parent)
+                        this.sidebar1 = [parent];
+                    this.item_in_sidebar1.push(parent!.key);
+                }
+            } else if (item.children && !this.item_in_sidebar1.includes(item.parent))
+                this.add_to_first_sidebar(item.children, true);
+            if (first)
+                return true;
+        });
+    }
+
+    change_first_sidebar = (info: { key: React.Key, [key: string]: any }): void => {
+        const {permissions} = this.props;
+        const key = info.key;
+        const sidebar2: Item[] = [];
+
+        second_sidebar_item.forEach(item => {
+            if (item.parent === key) {
+                if ((!(item.key in permissions!)) && (!item.children))
+                    return;
+                if (item.key in permissions!)
+                    sidebar2.push(item);
+                else {
+                    const new_item = {...item};
+                    new_item.children = item.children?.filter(obj => obj.key in permissions!)
+                    sidebar2.push(new_item);
+                }
+
+            }
+        });
+        const path = [...this.state.path];
+        if (path.length)
+            path[0] = key as string;
+        this.setState({sidebar2: sidebar2.length ? sidebar2 : undefined, path});
+    }
+
+
+    setCollapse1 = () => {
+        this.setState({collapse1: !this.state.collapse1});
+    }
+
+    setCollapse2 = () => {
+        this.setState({collapse2: !this.state.collapse2});
+    }
+
+    render() {
+        const {
+            children,
+            logout,
+            user,
+            companies,
+        } = this.props;
+        const {collapse1, collapse2, path, sidebar1, sidebar2} = this.state;
+
+        const companies_list = companies.LIST?.data || []
+        return (
+            <Layout>
+
+                <Layout.Sider collapsed={collapse1}
+                              onCollapse={this.setCollapse1}
+                              className="layout__with-auth__sidebar"
+                              collapsedWidth={sidebarCollapseWidth}
+                              width={sidebarWidth}
                 >
+                    <div className="sidebar__logo">
+                        <Image
+                            src={sidebarLogo}
+                            className="logo__image"
+                            preview={false}/>
+                    </div>
+                    <Row className="sidebar__company" hidden={companies_list.length < 2}>
+                        <Col span={18} offset={3}>
+                            <Form.Item label="پروژه" colon={false}>
+                                <Select>
+                                    {
+                                        companies_list.map(company => (
+                                            <Select.Option key={company.id} value={company.id} children={company.name}/>
+                                        ))
+                                    }
+                                </Select>
+                            </Form.Item>
+                        </Col>
+                    </Row>
+                    <Menu mode="vertical"
+                          selectable={false}
+                          selectedKeys={path}
+                          className="sidebar__menu"
+                          theme={'light'}
+                          onClick={this.change_first_sidebar}
 
-                    <Menu.Item key={'project-team'} icon={<AntIcon.UserOutlined/>}>
-                        <Link to={'/project-team'}>
-                            نفرات کارفرما
-                        </Link>
-                    </Menu.Item>
-                    <Menu.Item key={'baseline'} icon={<AntIcon.FieldTimeOutlined/>} disabled={!project}>
-                        <Link to={'/baseline'}>
-                            خط مبنا
-                        </Link>
-                    </Menu.Item>
-                </Menu>
-                <div className={styles.siderFooter}>
-
-                    <Typography.Text className={styles.userSection}>
-                        {user.first_name} {user.last_name}
-                    </Typography.Text>
-                    <Button danger type={'link'}
-                            icon={<AntIcon.LogoutOutlined/>}
-                            onClick={() => logout()}
                     >
-                        خروج
-                    </Button>
+                        {
+                            sidebar1 ? sidebar1.map(parent => (
+                                <Menu.Item
+                                    key={parent.key}
+                                    icon={parent.icon}
+                                    className="menu__item"
+                                >
+                                    {parent.title}
+                                </Menu.Item>
+                            )) : <Spin/>
+                        }
 
-                </div>
 
-
-            </Layout.Sider>
-
-
-            <Layout style={{marginRight: collapse ? sidebarCollapseWidth : sidebarWidth}}
-                    className={styles.innerLayout}>
-                <Layout.Header className={styles.header}>
-                    <div className={styles.logo}>
-                        <Image src={headerLogo} height={'100%'} preview={false}/>
+                    </Menu>
+                    <div className="sidebar__footer">
+                        <Image src={headerLogo}/>
                     </div>
 
-                    <Typography.Title level={4} className={classNames('bright', styles.pageTitle)}>
+
+                </Layout.Sider>
+
+                {sidebar2 ?
+                    <Layout.Sider collapsed={collapse2}
+                                  onCollapse={this.setCollapse2}
+                                  className="layout__with-auth__second-sidebar"
+                                  collapsedWidth={sidebarCollapseWidth}
+                                  width={sidebarWidth}
+                    >
+                        <Menu mode={"inline"}
+                              selectedKeys={path}
+                              className="sidebar__menu"
+                              theme={'light'}
+                        >
+
+
+                            {
+                                sidebar2.map(item => (
+                                    item.children ?
+                                        <Menu.SubMenu title={item.title} key={item.key} className="sub__menu">
+                                            {item.children.map(child => (
+                                                <Menu.Item key={child.key} className="menu__item">
+                                                    <Link
+                                                        to={`/${item.parent}/${item.key}/${child.key}`}>
+                                                        {child.title}
+                                                    </Link>
+                                                </Menu.Item>
+                                            ))
+
+                                            }
+                                        </Menu.SubMenu> :
+                                        <Menu.Item key={item.key} className="menu__item">
+                                            <Link to={`/${item.parent}/${item.key}`}>{item.title}</Link>
+                                        </Menu.Item>
+                                ))
+                            }
+
+                        </Menu>
+                    </Layout.Sider> : null
+                }
+
+
+                <Layout style={{marginRight: collapse1 ? sidebarCollapseWidth : sidebarWidth * 2}}
+                        className="layout__with_auth__inner">
+                    <Layout.Header className="inner__header">
+
+                        <Breadcrumb separator={<AntIcon.LeftOutlined size={10}/>}>
+                            <Breadcrumb.Item key='home'>
+                                <Link to="/">سلام</Link>
+                            </Breadcrumb.Item>
+
+                            <Breadcrumb.Item key='a'>
+                                <Link to="/">فعلا خدا حافظ</Link>
+                            </Breadcrumb.Item>
+                        </Breadcrumb>
+                    </Layout.Header>
+
+                    <Layout.Content className="inner__content">
                         {
-                            path[0] in pageName ? pageName[path[0] as keyof typeof pageName] : ''
+                            children
                         }
-                    </Typography.Title>
-                </Layout.Header>
+                    </Layout.Content>
+                </Layout>
 
-                <Layout.Content className={styles.content}>
-                    {
-                        children
-                    }
-                </Layout.Content>
+
             </Layout>
-
-
-        </Layout>
-    )
+        )
+    }
 }
 
-export default connector(WithAuth)
+const HistoryConnector = (props: { [key in Exclude<keyof PropType, 'history'>]: PropType[key] }) => {
+    const history = useHistory();
+    return <WithAuth history={history} {...props}/>
+}
+
+export default connector(HistoryConnector)

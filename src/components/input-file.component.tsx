@@ -2,7 +2,7 @@ import React, {ChangeEvent} from "react";
 import {InputProps} from 'antd/lib/input';
 import {ButtonProps} from 'antd/lib/button';
 import {FormItemProps} from 'antd/lib/form';
-import {Button, Form, Input,} from 'antd';
+import {Button, Col, Form, Input,} from 'antd';
 import {UploadOutlined} from "@ant-design/icons";
 
 type PropsType = { buttonProps?: ButtonProps, inputProps: InputProps, placeholder: React.ReactNode, formItemProps: FormItemProps }
@@ -15,7 +15,7 @@ export function InputFile({
                           }: PropsType) {
     const inputFile = React.useRef<Input>(null);
     const [file, setFile] = React.useState<File | undefined>(undefined);
-    buttonProps.icon = <UploadOutlined/>
+    buttonProps.icon = buttonProps.icon === undefined ? <UploadOutlined/> : buttonProps.icon
     buttonProps.style = buttonProps.style ? {...buttonProps.style, width: '100%'} : {width: '100%'};
     inputProps.type = 'file';
     inputProps.hidden = true;
@@ -31,6 +31,16 @@ export function InputFile({
     }
     return (
         <React.Fragment>
+            {formItemProps.label !== undefined ?
+                <Col {...formItemProps.labelCol || {}}>
+                    <label
+                        htmlFor={Array.isArray(formItemProps.name) ? formItemProps.name.join('_') : formItemProps.name + ''}
+                        className={"ant-form-item-required"}
+                    >
+                        {formItemProps.label}
+                    </label>
+                </Col> : null
+            }
             <Button {...buttonProps} onClick={onClick}>
                 {
                     file ? file.name : placeholder

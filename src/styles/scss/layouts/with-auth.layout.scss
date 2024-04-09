@@ -1,0 +1,151 @@
+@import "src/styles/scss/theme";
+
+.layout__with-auth__sidebar {
+  overflow: auto !important;
+  position: fixed !important;
+  right: 0 !important;
+  height: 100vh;
+  background-color: #ffffff !important;
+  padding: 30px 0;
+
+  & .sidebar__logo {
+    margin: auto auto 30px auto;
+    width: 110px;
+    height: 110px;
+
+    & .logo__image {
+      height: 100px;
+    }
+  }
+
+  & .sidebar__company {
+    & label {
+      color: #1d3557;
+    }
+
+    & .ant-select-focused .ant-select-selector {
+      border: none;
+    }
+
+    & .ant-select .ant-select-selector {
+      outline: none;
+      box-shadow: none !important;
+      border: none;
+      border-radius: 0;
+      border-bottom: #c5c9cc 1px solid;
+    }
+  }
+
+
+  & .sidebar__menu {
+    margin-top: 20px;
+    border: none !important;
+    padding-right: 10px !important;
+    background-color: transparent !important;
+
+    & .menu__item {
+      border-bottom-right-radius: 6px;
+      border-top-right-radius: 6px;
+      color: $text-color;
+      font-weight: bold;
+
+      &:active {
+        background-color: transparent;
+      }
+
+
+      &:hover {
+        color: $primary-color;
+      }
+
+      &.ant-menu-item-selected {
+        background-color: #eaf3fa;
+        color: #1d3557;
+
+      }
+    }
+  }
+
+  & .sidebar__footer {
+    width: 70%;
+    position: absolute;
+    bottom: 20px;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+    left: 15%;
+  }
+}
+
+.layout__with-auth__second-sidebar {
+  border-left: solid #f0f0f0 1px;
+  overflow: auto !important;
+  position: fixed !important;
+  right: 210px !important;
+  height: 100vh;
+  background-color: #eaf3fa;
+  padding: 30px 0;
+
+
+  & .sidebar__menu {
+    margin-top: 100px;
+    border: none;
+    background-color: transparent;
+    color: $heading-color;
+
+    & .ant-menu-submenu-title .ant-menu-submenu-arrow {
+      color: $heading-color;
+      left: inherit;
+      right: 10px;
+    }
+
+    & .sub__menu .ant-menu {
+      background-color: transparent;
+    }
+
+    & .menu__item {
+      & a {
+        color: $heading-color;
+      }
+
+      &::after {
+        border: none;
+      }
+
+      &.ant-menu-item-selected {
+        background-color: #f0f3f5;
+
+
+      }
+
+    }
+  }
+}
+
+.layout__with_auth__inner {
+  transition: margin-right .2s ease-in-out;
+  background: #f8fbfd;
+
+  & .inner__header {
+    background-color: white;
+    display: flex;
+    align-items: center;
+
+    & .ant-breadcrumb-link {
+      font-size: 20px;
+    }
+
+    & .anticon-left {
+      font-size: 12px !important;
+    }
+  }
+
+  & .inner__content {
+    border-radius: 10px;
+    padding: 10px;
+    background-color: white;
+    margin: 30px;
+    box-shadow: $box-shadow;
+    min-height: 87vh;
+  }
+}

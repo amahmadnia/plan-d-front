@@ -1,6 +1,7 @@
 import {put, takeEvery} from 'redux-saga/effects';
 import {CRUD_EXECUTE, CRUDExecuteActionType, setDataAction, setErrorAction} from "../action/global.actions";
 import {http} from "src/lib";
+import {AxiosResponse} from 'axios'
 import {Modal} from 'antd';
 import {AxiosError} from 'axios';
 
@@ -15,7 +16,7 @@ const errorType = {
 }
 
 function* crud({url, multipart = false, action, method, name, data}: CRUDExecuteActionType) {
-    let headers: any = {};
+    let headers: { [key: string]: string | number } = {};
 
     if (multipart) {
         headers['Content-Type'] = 'multipart/form-data'
@@ -26,7 +27,7 @@ function* crud({url, multipart = false, action, method, name, data}: CRUDExecute
         })
     }
     try {
-        const response: any = yield http.request({
+        const response: AxiosResponse = yield http.request({
             url,
             data,
             method,

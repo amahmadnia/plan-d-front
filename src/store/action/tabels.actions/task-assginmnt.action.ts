@@ -1,58 +1,57 @@
-import {CRUDType, AttendanceType} from "src/types";
+import {CRUDType, TaskAssignmentType} from "src/types";
 import {Dispatch} from "redux";
 import {CRUD_EXECUTE, CRUDExecuteActionType} from "../global.actions";
 import {TASK_ASSIGNMENTS_URL} from "src/URLS";
 
 
-export function attendanceCRUDAction
-({data, type, id}: {
-    type: CRUDType;
-    data?: AttendanceType & { id?: number };
-    id?: number;
+export function taskAssignmentCRUDAction
+({data, type, id, filter, sort}: {
+    type: Exclude<CRUDType, 'one'>;
+    data?: TaskAssignmentType & { id?: string };
+    id?: string;
+    filter?: { sprints_date_gt?: string, sprints_date_lt?: string },
+    sort?: string,
 }) {
+    let query_params = "";
+    if (filter?.sprints_date_gt && filter.sprints_date_lt)
+        query_params = `sprint_start=${filter.sprints_date_gt}&sprint_end=${filter.sprints_date_lt}`
+    if (sort)
+        query_params += `${query_params === "" ? '?' : '&'}ordering=${sort}`;
     return (dispatch: Dispatch<CRUDExecuteActionType>) => {
-        if (type === 'one')
-            dispatch({
-                type: CRUD_EXECUTE,
-                action: 'GET',
-                name: 'attendance',
-                method: 'GET',
-                url: `${ATTENDANCE_URL}/${id}`
-            });
-        else if (type === 'list')
+        if (type === 'list')
             dispatch({
                 type: CRUD_EXECUTE,
                 action: 'LIST',
-                name: 'attendance',
+                name: 'task_assignment',
                 method: 'GET',
-                url: `${ATTENDANCE_URL}`
+                url: `${TASK_ASSIGNMENTS_URL}?${query_params}`
             });
         else if (type === 'new')
             dispatch({
                 type: CRUD_EXECUTE,
                 action: 'POST',
-                name: 'attendance',
+                name: 'task_assignment',
                 method: 'POST',
-                url: `${ATTENDANCE_URL}`,
+                url: `${TASK_ASSIGNMENTS_URL}`,
                 data
             });
         else if (type === 'edit')
             dispatch({
                 type: CRUD_EXECUTE,
                 action: 'PATCH',
-                name: 'attendance',
+                name: 'task_assignment',
                 method: 'PATCH',
-                url: `${ATTENDANCE_URL}/${id}`,
+                url: `${TASK_ASSIGNMENTS_URL}/${id}`,
                 data
             });
         else if (type === 'delete')
             dispatch({
                 type: CRUD_EXECUTE,
                 action: 'DELETE',
-                name: 'attendance',
+                name: 'task_assignment',
                 method: 'DELETE',
-                url: `${ATTENDANCE_URL}/${id}`,
-                data: id!,
+                url: `${TASK_ASSIGNMENTS_URL}/${id}`,
+                data: id,
             });
 
 

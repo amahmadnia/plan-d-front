@@ -7,17 +7,20 @@ import {generateStore} from './store'
 import {BrowserRouter} from "react-router-dom";
 import Pages from "./pages";
 import {ConfigProvider} from 'antd';
-import fa_IR from 'antd/lib/locale-provider/fa_IR';
+import fa_IR from 'antd/lib/locale/fa_IR';
 
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.less';
 import './styles/index.css';
+import './styles/scss/index.scss';
 import dayjs from "dayjs";
+import weekday from 'dayjs/plugin/weekday';
+import jalali from 'jalaliday';
 
-const jalali = require('jalaliday');
-
-dayjs.extend(jalali.default);
+dayjs.extend(weekday);
+dayjs.extend(jalali);
 dayjs.extend(require('dayjs/plugin/isToday'))
 dayjs.locale('fa_IR');
+
 
 //@ts-ignore
 dayjs.calendar('jalali')

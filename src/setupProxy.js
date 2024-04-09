@@ -1,7 +1,7 @@
 const {createProxyMiddleware} = require('http-proxy-middleware');
 
 const proxy = createProxyMiddleware({
-    target: 'http://bp.buildtech:8000',
+    target: 'http://pd.buildtech:8000',
     changeOrigin: true,
 });
 

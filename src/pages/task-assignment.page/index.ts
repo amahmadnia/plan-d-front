@@ -1,1 +1,1 @@
-export {default as AttendanceViewAndEdit} from './project-team-form-table.page'
+export {default as TaskAssignmentViewAndEdit} from './task-assignment-form-table.page'

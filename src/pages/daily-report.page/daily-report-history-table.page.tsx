@@ -1,34 +1,36 @@
 import React from 'react';
 import {Link, RouteChildrenProps} from 'react-router-dom';
 import dayjs from 'dayjs';
-import {Button, Modal, Progress, Space, Table, Layout, PageHeader} from 'antd';
-import {EditOutlined, PaperClipOutlined, FileTextOutlined, HistoryOutlined} from "@ant-design/icons";
-import {DailyReportType, RootStateType} from "src/types";
+import {Button, Progress, Space, Table, Layout, PageHeader, Popconfirm} from 'antd';
+import {EditFilled, CloseOutlined, PlusCircleFilled} from "@ant-design/icons";
+import {DailyReportHistoryType, RootStateType} from "src/types";
 import {DateViewFormat, persian} from "src/lib";
 import {connect, ConnectedProps} from "react-redux";
-import {dailyReportCRUDAction, dailyReportProjectListGetAction} from "src/store/action";
+import {dailyReportHistoryCRUDAction, dailyReportProjectListGetAction} from "src/store/action";
 import {FilterValue, SorterResult} from "antd/es/table/interface";
 
 const mapStateToProps = (state: RootStateType) => {
     const permissions = state.authReducer.permissions!["daily-report"];
-    const list = state.tablesReducer.daily_report.LIST;
+    const list = state.tablesReducer.daily_report_history.LIST;
+    const del = state.tablesReducer.daily_report_history.DELETE;
     const project = state.tablesReducer.daily_report_project.LIST;
     return ({
         list,
+        del,
         project,
         permissions,
     });
 };
 
 const mapDispatchToProps = {
-    daily_report_action: dailyReportCRUDAction,
+    daily_report_history_action: dailyReportHistoryCRUDAction,
     project_action: dailyReportProjectListGetAction
 }
 const connector = connect(mapStateToProps, mapDispatchToProps);
 type PropsType = ConnectedProps<typeof connector> & RouteChildrenProps;
 type StateType = { note?: string, table_list: TableInterface[] };
 
-interface TableInterface extends DailyReportType {
+interface TableInterface extends DailyReportHistoryType {
     index: number;
 }
 
@@ -36,9 +38,11 @@ interface TableInterface extends DailyReportType {
 class DailyReportTablePage extends React.Component<PropsType, StateType> {
     state = {note: undefined, table_list: []};
     date_render = (date: string) => persian(dayjs(date).format(DateViewFormat));
+    progress_render = (progress: string | number) => <Progress type={'dashboard'} percent={Math.round(+progress)}
+                                                               width={50}/>
 
     componentDidMount() {
-        this.props.daily_report_action({type: 'list'});
+        this.props.daily_report_history_action({type: 'list'});
         this.props.project_action();
     }
 
@@ -52,10 +56,6 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
         }
     }
 
-    progress_render = (progress: string | number) => <Progress type={'dashboard'} percent={Math.round(+progress)}
-                                                               width={50}/>
-
-
     changeTable = (_: any,
                    filter: Record<string, FilterValue | null>,
                    sort: SorterResult<TableInterface> | SorterResult<TableInterface>[]
@@ -66,22 +66,22 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
 
         if (!Array.isArray(sort) && sort.order)
             s = (sort.order === 'ascend' ? '' : '-') + sort.columnKey;
-        this.props.daily_report_action({type: 'list', filter: filter, sort: s})
+        this.props.daily_report_history_action({type: 'list', filter: filter, sort: s})
     }
 
     render() {
-        const {list, project, permissions} = this.props;
+        const {list, project, permissions, daily_report_history_action, del} = this.props;
         return (
             <Layout>
                 <Layout.Header>
                     <PageHeader
                         title="ثبت گزارش روزانه"
                         extra={
-                            <Link type="primary" to="/project-management/form/daily-report/history"
+                            <Link type="primary" to="/project-management/form/daily-report"
                                   style={{marginBottom: 16}}
                                   className="ant-btn ant-btn-primary ant-btn-rtl">
-                                <HistoryOutlined style={{marginLeft: 5}}/>
-                                تاریخچه گزارش ها
+                                <PlusCircleFilled style={{marginLeft: 5}}/>
+                                ثبت گزارش
                             </Link>
                         }
                     />
@@ -95,7 +95,7 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
                                 // @ts-ignore
                                 if ((!['TD', 'TR'].includes(event.target.tagName)))
                                     return void 0;
-                                this.props.history.push(`/project-management/form/daily-report/new/${record.id}`)
+                                this.props.history.push(`/project-management/form/daily-report/history/${record.id}`)
                             },
                             className: 'pointer'
                         })}
@@ -128,24 +128,18 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
                             sorter={true}
                         />
 
+
                         <Table.Column
-                            title="تاریخ تحویل"
-                            dataIndex="deadline"
-                            key="deadline"
-                            align="center"
-                            render={this.date_render}
-                            sorter={true}
-                        />
-                        <Table.Column
-                            title="پیشرفت تا کنون"
-                            dataIndex="progress"
-                            key="progress"
+                            title="پیشرفت روزانه"
+                            dataIndex="today_progress"
+                            key="today_progress"
                             align="center"
                             render={this.progress_render}
                             sorter={true}
                         />
+
                         {
-                            permissions.add !== 'all_user' ? null :
+                            permissions.view !== 'all_user' ? null :
                                 <Table.Column
                                     title="مسئول"
                                     dataIndex="responsible"
@@ -154,6 +148,14 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
                                     sorter={true}
                                 />
                         }
+                        <Table.Column
+                            title="تاریخ"
+                            dataIndex="date"
+                            key="date"
+                            align="center"
+                            render={this.date_render}
+                            sorter={true}
+                        />
 
                         <Table.Column
 
@@ -161,39 +163,37 @@ class DailyReportTablePage extends React.Component<PropsType, StateType> {
                             dataIndex="id"
                             key="id"
                             align="center"
-                            render={(id, record: DailyReportType) => (
+                            render={(id) => (
                                 <Space>
-                                    <Button type="primary"
-                                            title='یاداشت'
-                                            icon={<FileTextOutlined/>}
-                                            onClick={() => {
-                                                this.setState({note: record.note || ''})
-                                            }}
+                                    <Button
+                                        type="primary"
+                                        title='ویرایش'
+                                        icon={<EditFilled/>}
+                                        onClick={() => {
+                                            this.props.history.push(`/project-management/form/daily-report/history/${id}/edit`)
+                                        }}
                                     />
-                                    <Button type="primary"
-                                            href={"/" + record?.file}
-                                            download
-                                            title='فایل'
-                                            icon={<PaperClipOutlined/>}
-
-                                    />
+                                    <Popconfirm title={'آیا از حذف این خط مبنا مطمئن هستید؟'}
+                                                onConfirm={() => daily_report_history_action({
+                                                    id,
+                                                    type: 'delete',
+                                                })}
+                                                icon={<CloseOutlined/>}
+                                                disabled={del?.status === 'loading' && id === del?.data!}
+                                                okText='بله'
+                                                cancelText='خیر'
+                                    >
+                                        <Button danger type="primary"
+                                                title='حذف خط مبنا'
+                                                loading={del?.status === 'loading' && id === del?.data!}
+                                                icon={<CloseOutlined/>}
+                                        />
+                                    </Popconfirm>
                                 </Space>
                             )}
                         />
 
                     </Table>
-                    <Modal
-                        title={"یاداشت"}
-                        visible={this.state.note !== undefined}
-                        footer={null}
-                        onCancel={() => {
-                            this.setState({note: undefined})
-                        }}
-                    >
-                        {
-                            this.state.note
-                        }
-                    </Modal>
                 </Layout.Content>
             </Layout>);
     }

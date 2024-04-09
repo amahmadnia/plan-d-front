@@ -1,6 +1,6 @@
 export type PermissionType = {
-    view: boolean;
-    new: boolean;
-    edit: boolean;
-    delete: boolean;
+    view: 'all_user' | 'self';
+    add: 'all_user' | 'self';
+    edit: 'all_user' | 'self';
+    delete: 'all_user' | 'self';
 }

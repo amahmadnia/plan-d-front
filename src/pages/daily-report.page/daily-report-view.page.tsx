@@ -6,8 +6,6 @@ import {DescriptionItem} from 'src/components';
 import {RootStateType} from "src/types";
 import {RouteChildrenProps} from 'react-router-dom';
 import {dailyReportHistoryCRUDAction} from "src/store/action";
-import {FileExcelOutlined} from "@ant-design/icons";
-import {Link} from 'react-router-dom';
 import dayjs from "dayjs";
 
 const mapStateToProps = (state: RootStateType) => {
@@ -124,7 +122,6 @@ const DailyReportViewPage: React.FC<PropsType> = ({one, history, match, daily_re
                                     align={"center"}
                                     dataIndex={"attachment_title"}
                                     key={"attachment_title"}
-                                    render={(time) => persian(dayjs(time, TimeFormat).format(TimeFormat))}
                                 />
                                 <Table.Column
                                     title={"فایل"}

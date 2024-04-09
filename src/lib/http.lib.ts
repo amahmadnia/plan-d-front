@@ -1,4 +1,4 @@
-import axios, {AxiosRequestConfig, AxiosResponse,AxiosError} from 'axios';
+import {default as axios, AxiosRequestConfig, AxiosResponse} from 'axios';
 import {rootStore} from 'src/store';
 
 export default {
@@ -6,13 +6,16 @@ export default {
         const {
             authReducer: {
                 token,
-                status
+                status,
+                company,
             },
         } = rootStore.getState();
         const header: any = {};
         if (token && status === 'ok') {
             header.Authorization = 'JWT ' + token;
         }
+        if (company)
+            header['B-COMPANY'] = company;
         return header;
     },
 

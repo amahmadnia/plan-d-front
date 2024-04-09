@@ -7,6 +7,7 @@ export interface Item extends TaskAssignmentType {
 }
 
 export interface TaskAssignmentEditableCellProps extends React.HTMLAttributes<HTMLElement> {
+    KEY: React.Key,
     editable: boolean;
     dataIndex: string;
     title: any;
@@ -18,14 +19,13 @@ export interface TaskAssignmentEditableCellProps extends React.HTMLAttributes<HT
 
 
 export const TaskAssignmentEditableCell: React.FC<TaskAssignmentEditableCellProps> = (props) => {
-    const {dataIndex, index, editable, title, children, InputNode, formItemProps, ...restProps} = props;
-
+    const {dataIndex, index, editable, title, children, InputNode, formItemProps, KEY, ...restProps} = props;
     if (dataIndex === 'no')
         return <td {...restProps}>{persian(index + 1)}</td>;
     else if (editable)
         return <td {...restProps}>
             <Form.Item
-                name={dataIndex}
+                name={KEY}
                 style={{margin: 0}}
                 rules={[
                     {

@@ -22,6 +22,7 @@ export function tablesReducer(state: TablesReducerTypes = tablesReducerInit(), a
                     case 'LIST':
                     case 'POST':
                     case  'PATCH':
+                    case 'DELETE':
                         return {
                             ...state,
                             [action.name]: {
@@ -32,24 +33,19 @@ export function tablesReducer(state: TablesReducerTypes = tablesReducerInit(), a
                                 }
                             }
                         }
-                    case 'DELETE': {
-                        const name: keyof TablesReducerTypes = action.name as keyof TablesReducerTypes;
-                        return {
-                            ...state,
-                            [name]: {
-                                ...state[name],
-                                DELETE: {
-                                    ...state[name].DELETE,
-                                    status: 'ok',
-                                },
-                                LIST: {
-                                    ...state[name].LIST,
-                                    //@ts-ignore
-                                    data: state[name].LIST?.data?.filter(value => value.id !== +state[name].DELETE.data),
-                                },
-                            }
-                        }
-                    }
+                    // case 'DELETE': {
+                    //     const name: keyof TablesReducerTypes = action.name as keyof TablesReducerTypes;
+                    //     return {
+                    //         ...state,
+                    //         [name]: {
+                    //             ...state[name],
+                    //             DELETE: {
+                    //                 ...state[name].DELETE,
+                    //                 status: 'ok',
+                    //             },
+                    //         }
+                    //     }
+                    // }
                 }
             return state
         case CRUD_SET_ERROR:

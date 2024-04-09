@@ -1,106 +1,135 @@
+@import "src/styles/scss/theme";
+
 $user-type-background: whitesmoke;
 $size: 17;
 $semicircular-size: $size + px;
 $semicircular-length: ($size * 2) + px;
 
-.user-type--header {
+.user-type__header {
   background-color: white !important;
   color: #333333 !important;
+
+  & .header__btn--new {
+    border-radius: 6px;
+    height: 40px;
+    font-weight: bold;
+  }
 }
 
 .user-type--sider {
   margin-left: 60px;
-}
+  position: relative;
 
-.user-type--menu {
-  background-color: rgba(10, 20, 30, .4) !important;
-  padding-top: 24px;
-  padding-bottom: 24px;
-
-  & .ant-menu-item-selected {
-    background-color: $user-type-background !important;
-    color: black;
-    font-weight: bold;
-    width: 310px;
-    overflow: visible;
+  & .ant-menu {
+    box-shadow: $box-shadow;
+    border-radius: 6px;
+    padding: 40px 40px;
+    position: fixed;
   }
+
 
   & .ant-menu-item {
-    transition: all .5s;
+    color: $primary-color;
+    text-align: center !important;
+    font-weight: 600;
+    border-radius: 6px;
+    background-color: transparent;
   }
 
-  & .ant-menu-item::after {
+  & .ant-menu-item:focus {
+    background-color: transparent;
+  }
+
+  & .ant-menu-item-selected {
+    background-color: $primary-color !important;
+    color: white;
+    font-weight: bold;
+  }
+
+
+  & .user-type--menu {
+    background-color: white;
     border: none;
+
   }
 
 }
 
+.user-type__content {
+  box-shadow: $box-shadow;
+  padding: 20px;
+  border-radius: 6px;
+}
 
-.user-type--menu .ant-menu-item {
-  & .user-type--top-left, & .user-type--bottom-left {
-    width: $semicircular-length;
-    height: $semicircular-length;
-    overflow: hidden;
+.user-type__section {
+  & .ant-input {
+    outline: none;
+    border: none;
+    border-bottom: 1px solid $primary-color;
+    border-radius: 0;
+    font-weight: 600;
+    color: $link-color;
+  }
+
+  & .ant-input:focus {
+    box-shadow: none;
+    color: $text-color;
+  }
+
+  & .ant-btn {
+    border-radius: 6px;
+    font-weight: 600;
+    height: 35px;
+  }
+
+  & .user-type-collapse-group .ant-space {
+    background-color: $secondary-color;
+    width: 100%;
+    height: 50px;
+    padding: 10px 20px;
+    border-radius: 6px;
+    color: $primary-color;
+
+  }
+
+  & .ant-collapse {
+    border: none;
+    border-radius: 6px;
+    margin-bottom: 20px;
+  }
+
+  & .ant-checkbox-inner {
+    border: $text-color 1px solid;
+  }
+
+  & .ant-collapse-item {
+    border: none;
+    margin: 0 20px;
+    background-color: transparent;
+    font-weight: bold;
+
+  }
+
+  & .ant-collapse-content {
+    border: none;
+    background-color: transparent;
+  }
+
+  & .collapse-item {
+    border: none;
+    border-top: 1px solid #e6e8e9;
+  }
+
+  & .ant-collapse-item:last-child {
+    border-bottom: none;
+  }
+
+  & .ant-collapse-header .ant-collapse-arrow {
     position: absolute;
-    left: 0;
-    display: none;
-    transition: all .5s step-end;
+    right: 95% !important;
 
-  }
-
-  & .user-type--top-left:before, & .user-type--bottom-left:before {
-    content: "";
-    display: block;
-    width: 200%;
-    height: 200%;
-    position: absolute;
-    border-radius: 50%;
-    transition: all .5s step-end;
   }
 }
-
-.user-type--menu .ant-menu-item-selected {
-  .user-type--top-left {
-    transform: translateY(-100%);
-    display: block;
-  }
-
-  .user-type--bottom-left {
-    display: block;
-  }
-
-  & .user-type--top-left:before {
-    bottom: 0;
-    left: 0;
-    box-shadow: (-$semicircular-size) $semicircular-size 0 0 $user-type-background;
-
-  }
-
-  & .user-type--bottom-left:before {
-    top: 0;
-    left: 0;
-    box-shadow: (-$semicircular-size) (-$semicircular-size) 0 0 $user-type-background;
-
-  }
-
-}
-
-
-.user-type--content {
-  background-color: $user-type-background;
-  padding: 24px
-}
-
-.user-type-collapse-group {
-  display: flex;
-  justify-content: center;
-  padding: 10px;
-  border: 1px solid rgb(217, 217, 217);
-  margin: 5px;
-  border-radius: 4px;
-  background-color: rgba(10, 10, 10, .1);
-}
-
 
 .user-type-section__radio-group {
   display: flex;
