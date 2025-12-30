@@ -2,7 +2,7 @@
   "name": "pland-front",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://pd.buildtech:8000",
+  "proxy": "http://localhost:6000",
   "dependencies": {
     "@ant-design/icons": "^4.3.0",
     "@ant-design/pro-card": "^1.10.2",
